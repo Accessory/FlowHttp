@@ -22,7 +22,7 @@ set(SOURCE_FILES
 
 include_directories(../Flow)
 
-add_executable(FlowHttp main.cpp ${SOURCE_FILES})
+add_executable(FlowHttp main2.cpp ${SOURCE_FILES})
 #add_executable(test hpack/hmain.cpp hpack/HPackTable.h hpack/HPack.h hpack/Huffman.h)
 
 set(Boost_USE_STATIC_LIBS OFF)
