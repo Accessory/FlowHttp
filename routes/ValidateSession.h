@@ -4,13 +4,14 @@
 #include <FlowUtils/FlowLog.h>
 #include <string>
 #include <boost/asio.hpp>
-#include <FlowHttp/FlowAsio.h>
+#include "../FlowAsio.h"
 #include <FlowUtils/base64.h>
 #include <FlowUtils/FlowString.h>
 #include <FlowUtils/FlowUUID.h>
-#include <FlowHttp/CookieGod.h>
-#include <FlowHttp/manager/SessionManager.h>
-#include <FlowHttp/manager/Session.h>
+#include "../manager/SessionManager.h"
+#include "../manager/Session.h"
+#include "../CookieUtil.h"
+#include <memory>
 
 class ValidateSession : public Route {
 public:
@@ -21,9 +22,9 @@ public:
         using namespace FlowAsio;
 
         auto cookie = request.Header("Cookie");
-        auto val = CookieGod::parseCookieValue(cookie, "session");
+        auto val = CookieUtil::parseCookieValue(cookie, "session");
 
-        shared_ptr<Session> session;
+        std::shared_ptr<Session> session;
         if (SessionManager::tryGetSession(FlowUUID::ToUUID(val), session)) {
             if (session->IsAuthorized) {
                 return false;

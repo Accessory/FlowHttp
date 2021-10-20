@@ -7,9 +7,8 @@
 #include <functional>
 #include <FlowUtils/FlowParser.h>
 
-using namespace std;
 
-class MulPaField : public map<string, string> {
+class MulPaField : public std::map<std::string, std::string> {
 public:
     ~MulPaField() {
         if (_fileIsOpen) {
@@ -18,18 +17,18 @@ public:
         }
     }
 
-    string Header(const string &key) {
+    std::string Header(const std::string &key) {
         auto itr = this->find(key);
         if (itr == this->end())
             return "";
         return itr->second;
     }
 
-    void addHeader(const string &key, const string &value) {
+    void addHeader(const std::string &key, const std::string &value) {
         this->operator[](key) = value;
     }
 
-    string Name() {
+    std::string Name() {
         if (_name.empty()) {
             _name = FlowParser::between(Header("Content-Disposition"), "name=\"", "\"");
         }
@@ -37,7 +36,7 @@ public:
         return _name;
     }
 
-    string FileName() {
+    std::string FileName() {
         if (_filename.empty()) {
             _filename = FlowParser::between(Header("Content-Disposition"), "filename=\"", "\"");
         }
@@ -45,11 +44,11 @@ public:
         return _filename;
     }
 
-    ofstream *File() {
+    std::ofstream *File() {
         return _file;
     }
 
-    ofstream *OpenIn(const string &basePath, const std::function<std::string(MulPaField*)> &function) {
+    std::ofstream *OpenIn(const std::string &basePath, const std::function<std::string(MulPaField*)> &function) {
         _fileIsOpen = true;
 
         if (function != nullptr) {
@@ -63,7 +62,7 @@ public:
             }
         }
 
-        _file = new ofstream(FullPath, ofstream::out | ofstream::binary);
+        _file = new std::ofstream(FullPath, std::ofstream::out | std::ofstream::binary);
         return _file;
     }
 
@@ -83,10 +82,10 @@ public:
     std::string FullPath;
 
 private:
-    ofstream *_file;
+    std::ofstream *_file;
     bool _fileIsOpen = false;
-    string _name;
-    string _filename;
+    std::string _name;
+    std::string _filename;
 };
 
 

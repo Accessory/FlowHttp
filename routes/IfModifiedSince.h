@@ -28,7 +28,7 @@ public:
         using namespace std;
 
         std::string path = request.Path();
-        UrlEscape::UrlDecode(path);
+        path = UrlEscape::url_decode(path);
         string normalPath = FlowString::subStrAt(path, urlBase, urlBase.size());
         string fullPath = FlowFile::combinePath(basePath, normalPath);
 

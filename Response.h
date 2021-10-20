@@ -69,7 +69,7 @@ public:
 
     inline bool Range(const std::string &range) {
         using namespace FlowSParser;
-        if (!startWith(range, "bytes="))
+        if (!(range.rfind("bytes=", 0) == 0))
             return false;
 
         size_t np;
@@ -82,17 +82,24 @@ public:
             return false;
         }
 
-        size_t endOffset = contentSize;
+        size_t endOffset = contentSize - 1;
         if (range.length() > np + 7 && range.at(np + 6) == '-') {
             endOffset = nextSizeT(range.substr(np + 7), &np);
             if (endOffset < contentSize && endOffset > startOffset) {
-                leftToRead = endOffset - startOffset;
+                leftToRead = endOffset - startOffset + 1;
             }
         }
 
-        this->emplace("Content-Range", "bytes " + to_string(startOffset) + "-" + to_string(endOffset) + "/" +
-                                       to_string(contentSize));
+        this->emplace("Content-Range", "bytes " + std::to_string(startOffset) + "-" + std::to_string(endOffset) + "/" +
+                                       std::to_string(contentSize));
 
+        if (contentSize != (endOffset - startOffset)) {
+            if (contentSize < leftToRead) {
+                return false;
+            }
+            contentSize = leftToRead;
+            this->StatusCode = HttpStatusCode::PartialContent;
+        }
         return true;
     }
 
@@ -145,6 +152,10 @@ public:
         rtn << endl << endl;
 
         return rtn.str();
+    }
+
+    inline size_t GetContentSize() {
+        return contentSize;
     }
 
     inline void SetFile(const std::string &path) {

@@ -8,7 +8,7 @@
 #include <FlowUtils/base64.h>
 #include <FlowUtils/FlowString.h>
 #include <FlowUtils/FlowUUID.h>
-#include "../CookieGod.h"
+#include "../CookieUtil.h"
 #include "../manager/SessionManager.h"
 #include "../manager/Session.h"
 
@@ -21,7 +21,7 @@ public:
 
         auto cookie = request.Header("Cookie");
 
-        auto val = CookieGod::parseCookieValue(cookie, "session");
+        auto val = CookieUtil::parseCookieValue(cookie, "session");
         shared_ptr<Session> session;
 
         if(!SessionManager::tryGetSession(FlowUUID::ToUUID(val), session)) {

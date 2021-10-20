@@ -6,6 +6,8 @@
 #include <vector>
 #include "Socket.h"
 #include <FlowUtils/FlowLog.h>
+#include <FlowUtils/Semaphore.h>
+#include "Request.h"
 
 namespace FlowAsio {
 
@@ -100,7 +102,6 @@ namespace FlowAsio {
     }
 
 
-
     inline bool write(Socket &socket, const std::string &data) {
         if (socket.IsSSL())
             return writeStringSSL(socket, data);
@@ -135,12 +136,22 @@ namespace FlowAsio {
         return write(socket, data.data(), data.size());
     }
 
+    inline bool sendMultiStatus(Socket &socket, Response &res) {
+        res.StatusCode = HttpStatusCode::MultiStatus;
+        return write(socket, res.ToString());
+    }
+
     inline bool sendOk(Socket &socket) {
         Response res;
         return write(socket, res.ToString());
     }
 
-    inline bool sendOk(Socket &socket, const Response& res) {
+    inline bool sendOk(Socket &socket, Response &res) {
+        res.StatusCode = HttpStatusCode::OK;
+        return write(socket, res.ToString());
+    }
+
+    inline bool send(Socket &socket, const Response &res) {
         return write(socket, res.ToString());
     }
 
@@ -173,7 +184,7 @@ namespace FlowAsio {
         write(socket, response.ToString());
     }
 
-    inline void sendFound(Response &response, Socket &socket, const std::string location) {
+    inline void sendFound(Response &response, Socket &socket, const std::string &location) {
         response.StatusCode = HttpStatusCode::Found;
         response.emplace("Location", location);
         write(socket, response.ToString());
@@ -185,15 +196,129 @@ namespace FlowAsio {
         write(socket, response.ToString());
     }
 
-    inline void sendNotFound(Socket &socket) {
+    inline bool sendNotFound(Socket &socket) {
         Response response(socket.IsSSL());
         response.StatusCode = HttpStatusCode::NotFound;
-        write(socket, response.ToString());
+        return write(socket, response.ToString());
     }
 
-    inline void sendBadRequest(Socket &socket) {
-        Response response(socket.IsSSL());
+    inline bool sendBadRequest(Socket &socket) {
+        Response response;
         response.StatusCode = HttpStatusCode::BadRequest;
-        write(socket, response.ToString());
+        return write(socket, response.ToString());
+    }
+
+    inline bool sendBadRequest(Socket &socket, Response &response) {
+        response.StatusCode = HttpStatusCode::BadRequest;
+        return write(socket, response.ToString());
+    }
+
+    inline bool sendMethodNotAllowed(Socket &socket) {
+        Response response(socket.IsSSL());
+        response.StatusCode = HttpStatusCode::MethodNotAllowed;
+        return write(socket, response.ToString());
+    }
+
+    inline bool
+    sendFile(const std::string &fileName,
+             const std::string &path,
+             const std::string &mime,
+             Request &request, Response &response, Socket &socket,
+             bool isDownload = true) {
+        const static size_t BUFFER_SIZE = 128 * 1024;
+
+        if (isDownload)
+            response["Content-Disposition"] = "attachment; filename=" + fileName;
+
+
+        response.ContentType = mime;
+        response.SetFile(path);
+
+        //Range
+        response["Accept-Ranges"] = "bytes";
+        if (request.count("Range")) {
+            if (!response.Range(request.at("Range"))) {
+                request.CloseConnection();
+                FlowAsio::sendBadRequest(socket);
+                return true;
+            }
+        }
+        unsigned char data1[BUFFER_SIZE];
+        unsigned char data2[BUFFER_SIZE];
+        unsigned char *data = data1;
+        bool dataSwitch = false;
+
+        Semaphore m;
+
+        const std::string header = response.Header();
+        m.lock();
+        std::thread([&] {
+            FlowAsio::write(socket, header);
+            m.unlock();
+        }).detach();
+        size_t readBytes = 0;
+        bool hasError = false;
+        size_t lock_count = 0;
+        while ((readBytes = response.ReadData(data, BUFFER_SIZE)) && !hasError) {
+            m.lock();
+            std::thread([&, data, readBytes] {
+                if (!FlowAsio::write(socket, data, readBytes)) {
+                    hasError = true;
+                    request.CloseConnection();
+                    m.unlock();
+                    return false;
+                }
+                m.unlock();
+                return true;
+            }).detach();
+            data = dataSwitch ? data1 : data2;
+            dataSwitch = !dataSwitch;
+        }
+        m.lock();
+        request.CloseConnection();
+        return true;
+    }
+
+    inline Request readRequest(Socket &socket) {
+        Request request;
+        while (request.ParserState <= HttpParserState::HEADER_END && request.ParserState != HttpParserState::END &&
+               request.ParserState != HttpParserState::BAD_REQUEST) {
+            auto req = FlowAsio::readBytes(socket);
+//            LOG_DEBUG << "Request:" << std::endl << std::string(req.begin(), req.end());
+            request << req;
+        }
+        return request;
+    }
+
+    inline Socket moveSocketToSSLSocket(boost::asio::ip::tcp::socket& socket, boost::asio::ssl::context &ssl_context) {
+        Socket rtn(std::move(socket));
+        boost::system::error_code error;
+        rtn.SetSSL(ssl_context);
+        rtn.GetSSLSocket()->handshake(boost::asio::ssl::stream_base::server, error);
+        if (error) {
+            LOG_WARNING << "Bad Request";
+        }
+        return rtn;
+    }
+
+    inline Socket moveSocketToSocket(boost::asio::ip::tcp::socket& socket) {
+        Socket rtn(std::move(socket));
+        return rtn;
+    }
+
+    inline std::string getBody(Request& request, Socket& socket){
+        while (request.ParserState >= HttpParserState::HEADER_END && request.ParserState != HttpParserState::END &&
+               request.ParserState != HttpParserState::BAD_REQUEST) {
+            auto req = FlowAsio::readBytes(socket);
+//            LOG_DEBUG << "Request:" << std::endl << std::string(req.begin(), req.end());
+            request << req;
+        }
+
+        if(request.GetBody().length() != std::stoull(request.ContentLength())){
+            LOG_WARNING << "Bad Request after reading all!";
+            request.ParserState = HttpParserState::BAD_REQUEST;
+        }
+
+        return request.GetBody();
     }
 }

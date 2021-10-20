@@ -27,12 +27,12 @@ public:
 //        const size_t BUFFER_SIZE = 65536;
         const size_t WRITE_TO_DISK_AT = 8 * 1024 * 1024;
 
-        vector<unsigned char> caBuf;
+        std::vector<unsigned char> caBuf;
 
         boost::system::error_code error;
 
         auto path = request.Path();
-        string fullPath = FlowFile::combinePath(basePath, path);
+        std::string fullPath = FlowFile::combinePath(basePath, path);
 
         if (stoul(request.ContentLength()) < WRITE_TO_DISK_AT) {
             while (request.ParserState != HttpParserState::END) {

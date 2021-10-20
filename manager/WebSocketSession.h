@@ -7,6 +7,7 @@
 #include <FlowUtils/FlowLog.h>
 #include <thread>
 #include "WebSocketManager.h"
+#include "../WebSocketFrame.h"
 
 class WebSocketSession {
 public:
@@ -76,9 +77,7 @@ private:
 
         frame.payload_data.assign(buffer.begin() + buffer_pos, buffer.begin() + buffer_pos + frame.payload_len);
         if (frame.mask) {
-            for (size_t i = 0; i < frame.payload_data.size(); ++i) {
-                frame.payload_data[i] = frame.payload_data[i] ^ frame.masking_key[i % 4];
-            }
+                frame.xorPayload();
         }
 
         return frame;

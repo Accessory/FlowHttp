@@ -50,8 +50,8 @@ public:
         } else if (FlowFile::fileExist(fullPath + HTML_SUFFIX)) {
             fullPath = fullPath + HTML_SUFFIX;
         }
-        string extension = FlowFile::getFileExtension(fullPath);
-        string mime = MimeTypes::extension_to_type(extension);
+        const auto extension = FlowFile::getFileExtension(fullPath);
+        const auto mime = MimeTypes::extension_to_type(extension);
         if (!FlowFile::fileExist(fullPath)) {
             return false;
         }

@@ -1,0 +1,187 @@
+body {
+    background-color: white;
+}
+
+button {
+    border: 1px solid white;
+    background-color: #001337;
+    color: white;
+    height: 2em;
+    width: 10em;
+}
+
+#content {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+}
+
+.flexRow {
+    display: flex;
+    flex-direction: row;
+}
+
+button:hover {
+    background-color: #b692e6;
+}
+
+@keyframes fadein {
+    from {
+        opacity: 0;
+        background-color: transparent;
+    }
+    to {
+        opacity: 1;
+        background-color: ##b692e6;
+    }
+}
+
+h1 {
+    background-color: #123456;
+    animation: fadein 1234ms;
+}
+
+h1:hover {
+    background-color: #b692e6;
+    transition: background-color ease-in;
+    transition-duration: 666ms;
+
+}
+
+.fillall {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-content: center;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex: 1 0 auto;
+}
+
+.flexObject {
+    display: flex;
+}
+
+.fillwidth {
+    /*width: 100vw;*/
+    display: flex;
+    align-content: center;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 auto;
+    /*position: fixed;*/
+}
+
+.breakWord {
+    word-wrap: break-word;
+    max-width: 100%;
+}
+
+.optionButton {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: contain;
+    background-color: #123456;
+    background-position: center;
+    background-repeat: no-repeat;
+    text-align: center;
+    min-height: 200px;
+    min-width: 200px;
+    max-height: 50vh;
+    max-width: 48vw;
+    height: 20vh;
+    width: 20vw;
+    transition: background-color 300ms;
+    transition-timing-function: ease-in;
+    flex: 1 1 auto;
+    border: 1px solid white;
+    padding: 5px;
+    margin: 0.5vw;
+}
+
+.bBdLButton {
+    display: flex;
+    position: absolute;
+    background-color: #285C7F;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    /*min-height: 50px;*/
+    /*min-width: 50px;*/
+    max-height: 10vh;
+    max-width: 10vw;
+    height: 4vw;
+    width: 4vw;
+    transition: background-color 300ms;
+    transition-timing-function: ease-in;
+    bottom: 1%;
+    right: 1%;
+    transition: background-color 300ms;
+    transition-timing-function: ease-in;
+}
+
+.bBdLButton a {
+    display: flex;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    color: white;
+}
+
+.bBdLButton:HOVER {
+    background-color: #027BCC;
+}
+
+.optionButton:HOVER {
+    background-color: #b692e6;
+}
+
+.buttonBox:HOVER {
+    background-color: #001337;
+}
+
+.buttonBox {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-content: stretch;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    background-color: #123456;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+}
+
+.vhFontWhite {
+    font-size: larger;
+    max-width: 100%;
+    color: white;
+    font-family: 'Roboto', serif;
+}
+
+.fontWhite {
+    color: white;
+    font-family: 'Roboto', serif;
+}
+
+.vhFontDarkSlateGray {
+    font-size: 18vh;
+    color: DarkSlateGray;
+    font-family: 'Roboto', serif;
+}
+
+@keyframes blink {
+    from {
+    }
+}

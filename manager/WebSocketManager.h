@@ -7,6 +7,7 @@
 #include <FlowUtils/FlowOpenSSL.h>
 #include <FlowUtils/FlowUUID.h>
 #include "../FlowAsio.h"
+#include "../util/WebSocketUtil.h"
 #include <memory>
 
 namespace WebSocketManager {
@@ -18,10 +19,7 @@ namespace WebSocketManager {
 
     void newSession(Request &request, Response &response, Socket &socket) {
         auto key = request.Header("Sec-WebSocket-Key");
-        std::string accept_key = key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-        LOG_INFO << "Websocket with key: " << accept_key;
-        auto accept_sha1 = FlowOpenSSL::sha1(accept_key);
-        auto accept = Base64::base64_encode(accept_sha1.data(), accept_sha1.size());
+        auto accept = WebSocketUtil::createSecWebSocketAccept(key);
         LOG_INFO << "Websocket accept: " << accept;
         response.StatusCode = HttpStatusCode::SwitchingProtocols;
         response.emplace("Upgrade", "websocket");
@@ -34,7 +32,6 @@ namespace WebSocketManager {
             WebSocketManager::deleteSession(id);
         };
         LOG_INFO << "Running Sessions: " << sessions.size();
-
     }
 
 };

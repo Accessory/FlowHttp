@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FlowHttp</title>
+    <link rel="stylesheet" href="public/login.css">
+    <link rel="stylesheet" href="public/style.css">
+    <link rel="shortcut icon" sizes="16x16 32x32 64x64" href="public/favicon.ico">
+    <script>
+        function uploadFile() {
+            var form = document.getElementById("form");
+            var formData = new FormData(form);
+            var xmlHttpRequest = new XMLHttpRequest();
+            xmlHttpRequest.open('POST', "/upload");
+            xmlHttpRequest.send(formData);
+        }
+    </script>
+</head>
+<body>
+<div id="content">
+    <img class="flexObject" src="bild.webp">
+    <h1 class="flexObject">Schöne neue Welt</h1>
+    <form id="form">
+        <input name="datei" id="datei" type="file">
+    </form>
+    <button onclick="uploadFile()">hochladen</button>
+</div>
+</body>
+</html>

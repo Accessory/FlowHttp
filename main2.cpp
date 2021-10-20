@@ -3,7 +3,7 @@
 #include "Request.h"
 #include "Response.h"
 #include <thread>
-//#include <FlowUtils/ThreadPool.h>
+#include <FlowUtils/ThreadPool.h>
 #include <FlowUtils/WorkerPool.h>
 #include "routes/Router.h"
 #include "routes/FileNotFound.h"
@@ -16,6 +16,7 @@
 #include <memory>
 #include "routes/GetBrotliRoute.h"
 #include "util/ArgParserUtil.h"
+#include "webdav/Webdav.h"
 
 int main(int argc, char *argv[]) {
     FlowArgParser fap = ArgParserUtil::defaultArgParser();
@@ -36,7 +37,7 @@ int main(int argc, char *argv[]) {
     WorkerPool workerPool(threadCount);
 
     boost::asio::io_context io_context;
-    unique_ptr <boost::asio::ssl::context> ssl_context;
+    std::unique_ptr <boost::asio::ssl::context> ssl_context;
     bool useSSL = false;
 
     if (fap.hasOption("dh") && fap.hasOption("key") && fap.hasOption("cert")) {
@@ -64,8 +65,15 @@ int main(int argc, char *argv[]) {
 
     Router router;
 
+//    router.addRoute(std::make_shared<FunctionRoute>(std::function<bool(Request &request, Response &response, Socket &socket)>(
+//                    [](Request &request, Response &response, Socket &socket){
+//                        LOG_INFO << "Test";
+//                        return false;
+//                    }
+//            )));
     router.addRoute(std::make_shared<InfoRoute>());
     router.addRoute(std::make_shared<ValidateRoute>());
+    router.addRoute(std::make_shared<Webdav>(path));
     router.addRoute(std::make_shared<RelationalUpload>("./", "/upload"));
     router.addRoute(std::make_shared<IfModifiedSince>(path));
     router.addRoute(std::make_shared<GetBrotliRoute>(path));
@@ -75,7 +83,7 @@ int main(int argc, char *argv[]) {
     size_t keepRunning = 10;
     while (keepRunning) {
         semaphore.lock();
-        workerPool.addTask(make_shared < function < void() >> ([&] { // Threadfunction
+        workerPool.addTask(std::make_shared<std::function<void()>> ([&] { // Threadfunction
             boost::system::error_code error;
 
             Socket socket(io_context);
@@ -91,14 +99,23 @@ int main(int argc, char *argv[]) {
                 }
             }
             semaphore.unlock();
-            auto req = FlowAsio::readBytes(socket);
-            LOG_INFO << std::string(req.begin(), req.end());
+//            auto req = FlowAsio::readBytes(socket);
+//            LOG_INFO << std::string(req.begin(), req.end());
+//
+//            Request request;
+//            request << req;
+            bool continue_connection = true;
+            while (continue_connection) {
+                continue_connection = false;
+                Request request = FlowAsio::readRequest(socket);
 
-            Request request;
-            request << req;
-
-            Response response(socket.IsSSL());
-            router.execRoute(request, response, socket);
+                Response response(socket.IsSSL());
+                router.execRoute(request, response, socket);
+                if (request.Header("Connection") == "keep-alive") {
+                    continue_connection = true;
+                }
+            }
+            LOG_INFO << "Connection closed.";
         })); // Threadfunction
         workerPool.start();
     }

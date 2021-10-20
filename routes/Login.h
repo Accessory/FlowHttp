@@ -8,15 +8,22 @@
 #include <FlowUtils/base64.h>
 #include <FlowUtils/FlowString.h>
 #include <FlowUtils/FlowUUID.h>
-#include "../CookieGod.h"
+#include "../CookieUtil.h"
 #include "../manager/SessionManager.h"
 #include "../manager/Session.h"
+#include "../pwm/PasswordFile.h"
 
 class Login : public Route {
     const std::string found;
+    PasswordFile passwordFile;
+
 public:
-    Login(const std::string& path, const std::string& found = "/") : Route(path, "POST"), found(found) {
-    }
+    Login(const std::string &path,
+          const std::string &found = "/",
+          const std::string &passwordFile = "pw.txt") :
+            Route(path, "POST"),
+            found(found),
+            passwordFile(passwordFile) {}
 
     virtual bool Run(Request &request, Response &response, Socket &socket) {
         using namespace FlowAsio;
@@ -27,8 +34,8 @@ public:
 
         LOG_INFO << username << " " << password;
 
-        if (username == "abc" && password == "cde") {
-            shared_ptr<Session> newSession = SessionManager::newSession();
+        if (passwordFile.verifyUser(username, password)) {
+            std::shared_ptr<Session> newSession = SessionManager::newSession();
             newSession->IsAuthorized = true;
             response.AddCookie("session", FlowUUID::ToString(newSession->id));
             FlowAsio::sendFound(response, socket, this->found);

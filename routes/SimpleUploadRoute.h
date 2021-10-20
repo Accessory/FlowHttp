@@ -9,12 +9,12 @@
 #include "../Request.h"
 #include "../Socket.h"
 #include <functional>
-#include <boost/filesystem.hpp>
 #include <FlowUtils/FlowUUID.h>
+#include "../FlowAsio.h"
 
 class SimpleUploadRoute : public Route {
 public:
-    StaticSimpleUploadRoute(const std::string &basePath = ""
+    SimpleUploadRoute(const std::string &basePath = ""
     ) : Route(".*", "POST") {
         this->basePath = basePath;
     }
@@ -25,9 +25,7 @@ public:
         const std::string INDEX_HTML = "index.html";
         const size_t BUFFER_SIZE = 8 * 1024;
         const size_t WRITE_TO_DISK_AT = 8 * 1024 * 1024;
-
-        vector<unsigned char> caBuf;
-
+        std::vector<unsigned char> caBuf;
         boost::system::error_code error;
 
         if (stoul(request.ContentLength()) < WRITE_TO_DISK_AT) {

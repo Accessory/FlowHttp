@@ -14,8 +14,8 @@ private:
     virtual bool Run(Request &request, Response &response, Socket &socket) {
         if ((request.ContentType() == "application/json" ||
              request.ContentType() == "application/json;charset=UTF-8" ||
-             request.ContentType() == "application/json;charset=utf-8") && request.Parameter.count("body")) {
-            auto body = request.GetParameter("body");
+             request.ContentType() == "application/json;charset=utf-8") && request.Parameter.count("$Body")) {
+            auto body = request.GetBody();
 
             if(body.empty())
                 return false;

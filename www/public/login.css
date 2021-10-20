@@ -1,0 +1,34 @@
+body {
+    margin: 0;
+}
+
+#centerBox {
+    border: 1px solid white;
+    background-color: #001337;
+    display: grid;
+    grid-template-areas: "label input" "label input" "footer footer" "info info";
+    color: white;
+}
+
+#loginButton,
+#registerButton {
+    grid-area: footer;
+    width: 100%;
+    height: 3em;
+}
+
+label {
+    font-size: larger;
+    border: 1px solid white;
+    text-align: center;
+    vertical-align: middle;
+    width: 10em;
+    color: white;
+}
+
+#infoBox {
+    grid-area: info;
+    width: 100%;
+    font-size: large;
+    display: none;
+}

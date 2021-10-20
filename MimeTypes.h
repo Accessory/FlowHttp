@@ -2,18 +2,8 @@
 #include <string>
 #include <map>
 
-class MimeTypes {
-public:
-    /// Convert a file extension into a MIME type.
-    static inline std::string extension_to_type(const std::string &extension) {
-        std::string toSearch = extension[0] == '.' ? extension.substr(1) : extension;
-        auto result = mimeTypes.find(toSearch);
-        if (result == mimeTypes.end())
-            return "text/plain";
-        return result->second;
-    }
-
-    const static inline std::map<std::string, std::string> mimeTypes = {
+namespace MimeTypes {
+    const inline std::map<std::string, std::string> mimeTypes = {
             {"123",         "application/vnd.lotus-1-2-3"},
             {"3dml",        "text/vnd.in3d.3dml"},
             {"3g2",         "video/3gpp2"},
@@ -265,7 +255,7 @@ public:
             {"jlt",         "application/vnd.hp-jlyt"},
             {"jnlp",        "application/x-java-jnlp-file"},
             {"joda",        "application/vnd.joost.joda-archive"},
-            {"jpeg,",       "image/jpeg"},
+            {"jpeg",       "image/jpeg"},
             {"jpg",         "image/jpeg"},
             {"jpgv",        "video/jpeg"},
             {"jpm",         "video/jpm"},
@@ -316,6 +306,7 @@ public:
             {"mid",         "audio/midi"},
             {"mif",         "application/vnd.mif"},
             {"mj2",         "video/mj2"},
+            {"mkv",         "video/x-matroska"},
             {"mlp",         "application/vnd.dolby.mlp"},
             {"mmd",         "application/vnd.chipnuts.karaoke-mmd"},
             {"mmf",         "application/vnd.smaf"},
@@ -323,7 +314,7 @@ public:
             {"mny",         "application/x-msmoney"},
             {"mods",        "application/mods+xml"},
             {"movie",       "video/x-sgi-movie"},
-            {"mp4",         "application/mp4"},
+//            {"mp4",         "application/mp4"},
             {"mp4",         "video/mp4"},
             {"mp4a",        "audio/mp4"},
             {"mpc",         "application/vnd.mophun.certificate"},
@@ -698,4 +689,13 @@ public:
             {"zir",         "application/vnd.zul"},
             {"zmm",         "application/vnd.handheld-entertainment+xml"}
     };
+
+    /// Convert a file extension into a MIME type.
+    static inline std::string extension_to_type(const std::string &extension) {
+        std::string toSearch = extension[0] == '.' ? extension.substr(1) : extension;
+        auto result = mimeTypes.find(toSearch);
+        if (result == mimeTypes.end())
+            return "text/plain";
+        return result->second;
+    }
 };
